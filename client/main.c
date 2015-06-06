@@ -31,6 +31,7 @@ const int MAX_ITERATIONS_PER_ROUND = 1000000;
 int main(int argc, char** argv) {
 	int port, clients = 0;
 	int opt, i, ret;
+	long max_iterations;
 
 	struct sockaddr_in servaddr;
 	struct client_details carg;
@@ -73,7 +74,8 @@ int main(int argc, char** argv) {
 
 	threads = calloc(clients, sizeof(pthread_t));
 
-	carg.iterations = MAX_ITERATIONS_PER_ROUND / clients;
+	max_iterations = MAX_ITERATIONS_PER_ROUND / clients;
+	carg.iterations = max_iterations;
 	fprintf(stderr, "priming with %ld iterations across %d clients\n", carg.iterations, clients);
 
 	for (; carg.iterations > 10;) {
@@ -100,9 +102,9 @@ int main(int argc, char** argv) {
 		}
 
 		carg.iterations = (long) ceil((pow((Z * stddev) / E, 2) - n) / clients);
-		if (carg.iterations > MAX_ITERATIONS_PER_ROUND) {
-			carg.iterations = MAX_ITERATIONS_PER_ROUND / clients;
-			fprintf(stderr, "need many more iterations to achieve statistical significance, doing another %ld per client\n", carg.iterations);
+		if (carg.iterations > max_iterations) {
+			fprintf(stderr, "need many more samples (%ld) to achieve statistical significance, doing another %ld per client\n", carg.iterations * clients, max_iterations);
+			carg.iterations = max_iterations;
 		} else if (carg.iterations > 0) {
 			fprintf(stderr, "running %ld more iterations per client to achieve statistical significance\n", carg.iterations);
 		}
