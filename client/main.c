@@ -114,7 +114,6 @@ void * client(void * arg) {
 	double current_mean;
 
 	struct sockaddr * servaddr;
-	char buf[4];
 	int sockfd;
 
 	struct timespec start, end;
@@ -145,17 +144,16 @@ void * client(void * arg) {
 	}
 
 	for (i = 0; i < config->iterations; i++) {
-		challenge = arc4random();
-		memcpy(buf, &challenge, sizeof(uint32_t));
+		challenge = htonl(arc4random());
 
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-		ret = sendto(sockfd, &buf, sizeof(buf), 0, servaddr, sizeof(struct sockaddr_in));
+		ret = sendto(sockfd, &challenge, sizeof(challenge), 0, servaddr, sizeof(struct sockaddr_in));
 		if (ret == -1) {
 			// TODO: handle errno
 			return stats;
 		}
 
-		ret = recvfrom(sockfd, &buf , 4, MSG_WAITALL, NULL, NULL);
+		ret = recvfrom(sockfd, &response , sizeof(response), MSG_WAITALL, NULL, NULL);
 		if (ret == -1) {
 			// TODO: handle errno
 			return stats;
@@ -166,9 +164,10 @@ void * client(void * arg) {
 		}
 		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-		memcpy(&response, buf, sizeof(uint32_t));
+		challenge = ntohl(challenge);
+		response = ntohl(response);
 		if (response != challenge + 1) {
-			// TODO: misbehaving server
+			fprintf(stderr, "server responded with incorrect response (%u != %u+1)\n", response, challenge);
 			return stats;
 		}
 
