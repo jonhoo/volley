@@ -10,11 +10,11 @@
 			"arguments": [
 				"$SRC/benchmark/bench.sh",
 				"$cores",
-				"2",
+				"40",
 				"$SRC/target/servers/$version"
 			],
 			"vary": {
-				"cores": "set(1,2)",
+				"cores": "set(1,2,4,8,12,16,20,24,28,32,36,40)",
 				"version": "set(cfork, rust, go)"
 			}
 		}
