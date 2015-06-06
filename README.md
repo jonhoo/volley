@@ -7,7 +7,7 @@ server application's programming language abstractions for sockets, or
 of the libraries and code running within the application.
 
 Volley spawns a configurable number of concurrent clients that all
-connect to the server, and then performs ping-pong-like single-byte
+connect to the server, and then performs ping-pong-like single-word
 operations with the server to gather statistics. It will continue doing
 so for as many iterations as it takes to produce statistically relevant
 results.
