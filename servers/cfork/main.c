@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 				ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
 				if (ret == -1) {
 					// TODO: handle error
+					break;
 				}
 				if (ret == 0) {
 					// connection closed
@@ -88,6 +89,7 @@ int main(int argc, char *argv[])
 				ret = sendto(csock, &challenge, sizeof(challenge), 0, (struct sockaddr *) &servaddr, sizeof(struct sockaddr_in));
 				if (ret == -1) {
 					// TODO: handle error
+					break;
 				}
 
 			}

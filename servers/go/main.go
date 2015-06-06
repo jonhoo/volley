@@ -42,6 +42,8 @@ func main() {
 }
 
 func handleConnection(c net.Conn) {
+	defer c.Close()
+
 	var challenge uint32 = 0
 	for {
 		if err := binary.Read(c, binary.BigEndian, &challenge); err != nil {
