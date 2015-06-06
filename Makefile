@@ -1,6 +1,6 @@
 target/client: client/main.c
 	mkdir -p target
-	clang -o target/client -pthreads -lm -lbsd client/main.c
+	clang -Wall -g -o target/client -pthreads -lm -lbsd -O3 client/main.c
 
 clean:
 	rm -rf target
