@@ -1,0 +1,22 @@
+{
+	"checkout": "master",
+	"experiment": "Vary cores",
+	"keep-stdout": true,
+	"iterations": 1,
+	"parallelism": 1,
+	"versions": {
+		"$version-$cores": {
+			"build": "make target/client target/servers/$version",
+			"arguments": [
+				"$SRC/benchmark/bench.sh",
+				"$cores",
+				"2",
+				"$SRC/target/servers/$version"
+			],
+			"vary": {
+				"cores": "set(1,2)",
+				"version": "set(cfork, rust, go)"
+			}
+		}
+	}
+}
