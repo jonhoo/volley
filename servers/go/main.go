@@ -6,11 +6,22 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
 	var port = flag.Int("p", 0, "port to listen on")
 	flag.Parse()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		for range c {
+			os.Exit(0)
+		}
+	}()
 
 	ln, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
