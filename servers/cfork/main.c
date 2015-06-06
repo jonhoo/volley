@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 	int forks = 0;
 
 	uint32_t challenge;
-	char buf[4];
 
 	while ((opt = getopt(argc, argv, "p:")) != -1) {
 		switch (opt) {
@@ -75,7 +74,7 @@ int main(int argc, char *argv[])
 		forks++;
 		if ((pid = fork()) == 0) {
 			for (;;) {
-				ret = recvfrom(csock, &buf , 4, MSG_WAITALL, NULL, NULL);
+				ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
 				if (ret == -1) {
 					// TODO: handle error
 				}
@@ -84,11 +83,9 @@ int main(int argc, char *argv[])
 					break;
 				}
 
-				memcpy(&challenge, buf, sizeof(uint32_t));
-				challenge++;
-				memcpy(buf, &challenge, sizeof(uint32_t));
+				challenge = htonl(ntohl(challenge) + 1);
 
-				ret = sendto(csock, &buf, sizeof(buf), 0, (struct sockaddr *) &servaddr, sizeof(struct sockaddr_in));
+				ret = sendto(csock, &challenge, sizeof(challenge), 0, (struct sockaddr *) &servaddr, sizeof(struct sockaddr_in));
 				if (ret == -1) {
 					// TODO: handle error
 				}

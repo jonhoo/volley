@@ -34,7 +34,8 @@ fn main() {
 }
 
 fn handle_client(mut stream: TcpStream) {
-    let mut buf = [0_u8; 4];
+    let mut challenge : u32 = 0;
+    let buf : &mut [u8; 4] = unsafe{ mem::transmute(&mut challenge) };
     let mut nread;
     loop {
         nread = 0;
@@ -49,8 +50,8 @@ fn handle_client(mut stream: TcpStream) {
                 }
             }
         }
-        let challenge : &mut u32 = unsafe{ mem::transmute(&mut buf) };
-        *challenge += 1;
+
+        challenge = u32::to_be(u32::from_be(challenge) + 1);
 
         let mut nwritten = 0;
         while nwritten < buf.len() {
