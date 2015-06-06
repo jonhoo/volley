@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 )
 
@@ -23,6 +24,7 @@ func main() {
 		}
 	}()
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	ln, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		fmt.Printf("failed to listen on port %d: %v\n", port, err)
