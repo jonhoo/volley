@@ -15,3 +15,63 @@ results.
 ## Preliminary results
 
 ![performance plot](https://cdn.rawgit.com/jonhoo/volley/19601460a4f95a5d9758be0cf4c5c5be8d92022d/benchmark/perf.png)
+
+## Contributing servers
+
+Please submit PRs adding a directory to `servers/`. The name of the
+directory should be indicative of what server is being tested. The
+directory should contain a Makefile that has (at least) two targets:
+
+  - a target with the same name as the directory. this rule should
+    produce an executable binary with that name in the current
+    directory.
+  - a `clean` rule, which is called whenever the top-level `clean`
+    target is invoked.
+
+The binary accepts a single, mandatory flag, `-p`, which names a TCP
+port. The server should listen on this port for incoming requests. For
+every established connection, the server behaviour should be as follows:
+
+  1. read 4 bytes from the connection
+  2. parse the 4 bytes into a 32 bit integer using network byte order
+  3. if the integer is zero, the server should terminate
+  4. add one to the integer, wrapping around if necessary
+  5. write the integer as 4 bytes in network byte order to the connection
+  6. go to step 1.
+
+If a connection is closed, the server should continue waiting for new
+connections. If the server receives a SIGTERM, it should terminate at
+its earliest convenience (i.e. it should not block indefinitely waiting
+for new connctions).
+
+To verify that your server works correctly, run the follwoing commands:
+
+```
+volley/ $ make
+volley/ $ ./benchmark/bench.sh 1 1 1 target/servers/<your-server>
+```
+
+This should output something akin to:
+
+```
+numactl -C +0-0 /home/.../volley/target/servers/<server> -p 2222
+numactl -C 3-3 /home/.../volley/target/<server> -p 2222 -c 1
+priming with 1000000 iterations across 1 clients
+iteration complete: mean is 9us, stddev is 1.25us
+9.04us
+```
+
+You may also see the error:
+
+```
+./benchmark/bench.sh: line 47: kill: (12345) - No such process
+```
+
+This can safely be ignored, and is an artefact of the fact that the
+server may terminate when it receives a 0 challenge.
+
+## Server improvements
+
+If you believe an already implemented server could be improved (either
+syntactically or semantically), please file an issue detailing the
+problem, and if possible, submit a PR giving a proposed solution.
