@@ -1,0 +1,25 @@
+#!/usr/bin/env Rint
+library(grDevices)
+library(utils)
+X11(width=12, height=10)
+
+library(ggplot2)
+args <- commandArgs(trailingOnly = TRUE)
+args <- if (length(args) == 0) Sys.getenv("ARGS") else args
+args <- if (args[1] == "") "plot.dat" else args
+
+d <- data.frame(read.table(
+			   text=gsub('us$', '', readLines(file(args[1]))),
+			   col.names=c("server", "cores", "time")
+			   ))
+d$ops = 40*1/(d$time / 1000.0 / 1000.0)
+
+print(d)
+p <- ggplot(data=d, aes(x = cores, y = ops, color = server))
+p <- p + geom_line()
+#p <- p + facet_wrap(~ clients)
+p <- p + xlab("CPU cores")
+p <- p + ylab("Mean ops/s")
+
+p
+ggsave("perf.png", plot = p, width = 8, height = 6)
