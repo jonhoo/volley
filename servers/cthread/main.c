@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <errno.h>
 
 #include <sys/wait.h>
 
@@ -17,9 +18,7 @@ static int done = 0;
 
 void * handle_client(void * arg);
 void sig_handler(int signo) {
-	if (signo == SIGINT || signo == SIGKILL || signo == SIGTERM) {
-		done = 1;
-	}
+	done = 1;
 }
 
 int main(int argc, char *argv[])
@@ -28,7 +27,12 @@ int main(int argc, char *argv[])
 	int port;
 	long i;
 
+	signal(SIGINT, sig_handler);
+	signal(SIGKILL, sig_handler);
+	signal(SIGTERM, sig_handler);
+
 	struct sockaddr_in servaddr;
+	struct timeval timeout;
 	int ssock;
 
 	long nthreads;
@@ -63,6 +67,10 @@ int main(int argc, char *argv[])
 	if (ssock == -1) {
 		// TODO: handle error
 	}
+
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	setsockopt(ssock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 
 	ret = bind(ssock, (struct sockaddr *)&servaddr, sizeof(servaddr));
 	if (ret == -1) {
@@ -106,10 +114,13 @@ void * handle_client(void * arg) {
 	while (done == 0) {
 		csock = accept(ssock, (struct sockaddr *)&client, &socksize);
 		if (csock == -1) {
+			if (errno == EWOULDBLOCK) {
+				continue;
+			}
 			// TODO: handle error
 		}
 
-		for (;;) {
+		while (done == 0) {
 			ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
 			if (ret == -1) {
 				// TODO: handle error
