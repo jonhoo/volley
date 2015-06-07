@@ -5,18 +5,17 @@
 	"iterations": 1,
 	"parallelism": 1,
 	"versions": {
-		"$version-$clients-$cores": {
+		"$version-$cores": {
 			"build": "make target/client target/servers/$version",
 			"arguments": [
 				"$SRC/benchmark/bench.sh",
 				"$cores",
 				"40",
-				"$clients",
+				"40",
 				"$SRC/target/servers/$version"
 			],
 			"vary": {
-				"cores": "set(1,2,4,8,12,16,20,24,28,32,36,40)",
-				"clients": "set(40, 80, 120)",
+				"cores": "set(1,2,4,8,12,16,20,24,28)",
 				"version": "set(cthread, rust, go)"
 			}
 		}
