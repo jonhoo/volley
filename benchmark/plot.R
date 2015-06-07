@@ -10,9 +10,9 @@ args <- if (args[1] == "") "plot.dat" else args
 
 d <- data.frame(read.table(
 			   text=gsub('us$', '', readLines(file(args[1]))),
-			   col.names=c("server", "cores", "time")
+			   col.names=c("server", "clients", "cores", "time")
 			   ))
-d$ops = 40*1/(d$time / 1000.0 / 1000.0)
+d$ops = d$clients/(d$time/1000.0/1000.0)
 
 print(d)
 p <- ggplot(data=d, aes(x = cores, y = ops, color = server))
