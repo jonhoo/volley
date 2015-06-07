@@ -25,7 +25,7 @@ struct client_stats {
 
 void * client(void * arg);
 const double Z = 1.96; // 95% probability estimated value
-const double E = 100;  // lies within +/- 100ns of true value
+const double E = 1000;  // lies within +/- 1us of true value
 const int MAX_ITERATIONS_PER_ROUND = 1000000;
 
 int main(int argc, char** argv) {
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 		}
 
 		carg.iterations = (long) ceil((pow((Z * stddev) / E, 2) - n) / clients);
-		fprintf(stderr, "iteration complete: mean is %.0fns, stddev is %.2fns\n", mean, stddev);
+		fprintf(stderr, "iteration complete: mean is %.0fus, stddev is %.2fus\n", mean/1000.0, stddev/1000.0);
 		if (carg.iterations > max_iterations) {
 			fprintf(stderr, "need many more samples (%ld) to achieve statistical significance, doing another %ld per client\n", carg.iterations * clients, max_iterations);
 			carg.iterations = max_iterations;
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	printf("%.0fns\n", mean);
+	printf("%.2fus\n", mean/1000.0);
 	exit(EXIT_SUCCESS);
 }
 
