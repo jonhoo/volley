@@ -16,6 +16,16 @@ results.
 
 ![performance plot](https://cdn.rawgit.com/jonhoo/volley/19601460a4f95a5d9758be0cf4c5c5be8d92022d/benchmark/perf.png)
 
+To reproduce, run:
+
+```
+benchmark/ $ experiment -r $(PWD)/..
+benchmark/ $ grep us 'out/*/run-1/stdout.log' | tr '/:-' '\t' | awk '{print $6" "$7" "$8" "$11}' > plot.dat
+```
+
+And plot using the R script in `benchmark/plot.R`.
+
+
 ## Contributing servers
 
 Please submit PRs adding a directory to `servers/`. The name of the
