@@ -35,8 +35,8 @@ for i in "$@"; do
 	fi
 done
 
-echo numactl -C 0-$ends "${args[@]}" -p 2222 >/dev/stderr
-numactl -C 0-$ends "${args[@]}" -p 2222 &
+echo numactl -C +0-$ends "${args[@]}" -p 2222 >/dev/stderr
+numactl -C +0-$ends "${args[@]}" -p 2222 &
 pid=$!
 
 sleep 1
