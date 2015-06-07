@@ -5,8 +5,8 @@ client=$(readlink -f "$DIR/../target/client")
 ncores=$(lscpu | grep "^CPU(s):" | sed 's/.* //')
 scores="$1"; shift
 ccores="$1"; shift
+clients="$1"; shift
 ((startc=ncores-ccores))
-((clients=ccores*1))
 
 if ((scores+ccores>ncores)); then
 	echo "Cannot use more server+client cores than there are CPU cores" >/dev/stderr
