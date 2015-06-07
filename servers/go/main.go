@@ -52,7 +52,12 @@ func handleConnection(c net.Conn) {
 			}
 			return
 		}
+
+		if challenge == 0 {
+			os.Exit(0)
+		}
 		challenge++
+
 		if err := binary.Write(c, binary.BigEndian, &challenge); err != nil {
 			fmt.Println("bad write", err)
 			return

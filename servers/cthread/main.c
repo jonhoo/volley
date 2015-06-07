@@ -131,7 +131,12 @@ void * handle_client(void * arg) {
 				break;
 			}
 
-			challenge = htonl(ntohl(challenge) + 1);
+			challenge = ntohl(challenge);
+			if (challenge == 0) {
+				done = 1;
+				break;
+			}
+			challenge = htonl(challenge + 1);
 
 			ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
 			if (ret == -1) {

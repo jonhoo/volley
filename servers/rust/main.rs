@@ -1,3 +1,5 @@
+#![feature(libc)]
+
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::io;
@@ -7,19 +9,28 @@ use std::str::FromStr;
 use std::io::Read;
 use std::io::Write;
 
+extern crate libc;
+
 fn main() {
     let port_ : Option<String> = env::args().skip(2).next();
     if let None = port_ {
         println!("usage: {} -p port", env::args().next().unwrap());
+        return;
     }
 
     let port = u16::from_str(&port_.unwrap());
     if let Err(ref e) = port {
         println!("invalid port number given: {}", e);
+        return;
     }
-    let listener = TcpListener::bind(("127.0.0.1", port.unwrap())).unwrap();
 
-    for stream in listener.incoming() {
+    let listener = TcpListener::bind(("127.0.0.1", port.unwrap()));
+    if let Err(ref e) = listener {
+        println!("failed to listen on port: {}", e);
+        return;
+    }
+
+    for stream in listener.unwrap().incoming() {
         match stream {
             Ok(stream) => {
                 thread::spawn(move|| {
@@ -51,7 +62,11 @@ fn handle_client(mut stream: TcpStream) {
             }
         }
 
-        challenge = u32::to_be(u32::from_be(challenge) + 1);
+        challenge = u32::from_be(challenge);
+        if challenge == 0 {
+            unsafe { libc::exit(0 as libc::c_int); }
+        }
+        challenge = u32::to_be(challenge + 1);
 
         let mut nwritten = 0;
         while nwritten < buf.len() {

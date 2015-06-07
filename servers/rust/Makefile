@@ -1,5 +1,5 @@
 rust: main.rs
-	rustc -o $@ $<
+	rustc -g -o $@ $<
 
 clean:
 	rm -f rust

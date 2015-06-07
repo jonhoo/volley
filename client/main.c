@@ -32,10 +32,12 @@ int main(int argc, char** argv) {
 	int port, clients = 0;
 	int opt, i, ret;
 	long max_iterations;
+	int sockfd;
 
 	struct sockaddr_in servaddr;
 	struct client_details carg;
 	pthread_t * threads;
+	uint32_t zero = 0;
 
 	struct client_stats *cret;
 	double current_mean, mean = 0;
@@ -111,6 +113,24 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// send termination signal
+	sockfd = socket(AF_INET,SOCK_STREAM, 0);
+	if (sockfd == -1) {
+		// TODO:: handle socket error
+	}
+
+	ret = connect(sockfd, (struct sockaddr *) &servaddr, sizeof(struct sockaddr_in));
+	if (ret == -1) {
+		// TODO: handle connect error
+	}
+
+	ret = sendto(sockfd, &zero, sizeof(zero), 0, NULL, 0);
+	if (ret == -1) {
+		// TODO: handle errno
+	}
+	close(sockfd);
+
+
 	printf("%.2fus\n", mean/1000.0);
 	exit(EXIT_SUCCESS);
 }
@@ -128,7 +148,7 @@ void * client(void * arg) {
 	long nsecdiff;
 	double diff;
 
-	uint32_t challenge, response;
+	uint32_t response, challenge = 0;
 
 	long i;
 	int ret;
@@ -151,10 +171,12 @@ void * client(void * arg) {
 	}
 
 	for (i = 0; i < config->iterations; i++) {
-		challenge = htonl(arc4random());
+		while (challenge == 0) {
+			challenge = htonl(arc4random());
+		}
 
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-		ret = sendto(sockfd, &challenge, sizeof(challenge), 0, servaddr, sizeof(struct sockaddr_in));
+		ret = sendto(sockfd, &challenge, sizeof(challenge), 0, NULL, 0);
 		if (ret == -1) {
 			// TODO: handle errno
 			return stats;
