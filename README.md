@@ -11,3 +11,7 @@ connect to the server, and then performs ping-pong-like single-word
 operations with the server to gather statistics. It will continue doing
 so for as many iterations as it takes to produce statistically relevant
 results.
+
+## Preliminary results
+
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/19601460a4f95a5d9758be0cf4c5c5be8d92022d/benchmark/perf.png)
