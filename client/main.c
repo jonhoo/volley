@@ -102,6 +102,7 @@ int main(int argc, char** argv) {
 		}
 
 		carg.iterations = (long) ceil((pow((Z * stddev) / E, 2) - n) / clients);
+		fprintf(stderr, "iteration complete: mean is %.0fns, stddev is %.2fns\n", mean, stddev);
 		if (carg.iterations > max_iterations) {
 			fprintf(stderr, "need many more samples (%ld) to achieve statistical significance, doing another %ld per client\n", carg.iterations * clients, max_iterations);
 			carg.iterations = max_iterations;
