@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/sysinfo.h>
 
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -12,8 +13,9 @@
 
 int main(int argc, char *argv[])
 {
-	int opt, i, ret;
+	int opt, ret;
 	int port;
+	long i;
 
 	struct sockaddr_in servaddr, client;
 	socklen_t socksize;
@@ -65,14 +67,21 @@ int main(int argc, char *argv[])
 		// TODO: handle error
 	}
 
-	for (;;) {
-		int csock = accept(ssock, (struct sockaddr *)&client, &socksize);
-		if (csock == -1) {
-			// TODO: handle error
+	for (i = 0; i < get_nprocs(); i++) {
+		forks++;
+		pid = fork();
+		if (pid > 0) break;
+		if (pid < 0) {
+			perror("failed to fork!");
+			break;
 		}
 
-		forks++;
-		if ((pid = fork()) == 0) {
+		for (;;) {
+			int csock = accept(ssock, (struct sockaddr *)&client, &socksize);
+			if (csock == -1) {
+				// TODO: handle error
+			}
+
 			for (;;) {
 				ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
 				if (ret == -1) {
@@ -91,7 +100,6 @@ int main(int argc, char *argv[])
 					// TODO: handle error
 					break;
 				}
-
 			}
 			close(csock);
 			exit(EXIT_SUCCESS);
