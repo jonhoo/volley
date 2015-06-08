@@ -14,7 +14,7 @@ results.
 
 ## Preliminary results
 
-![performance plot](https://cdn.rawgit.com/jonhoo/volley/8a2505f63a3811ebaa6e8f8044dba6458ff4cf72/benchmark/perf.png)
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/05c1a477b85d46f72016c35b2271cb3bad3fb982/benchmark/perf.png)
 
 To reproduce, run:
 
