@@ -1,4 +1,5 @@
 #![feature(libc)]
+#![feature(tcp)]
 
 use std::net::{TcpListener, TcpStream};
 use std::thread;
@@ -48,6 +49,9 @@ fn handle_client(mut stream: TcpStream) {
     let mut challenge : u32 = 0;
     let buf : &mut [u8; 4] = unsafe{ mem::transmute(&mut challenge) };
     let mut nread;
+
+    let _ = stream.set_nodelay(true);
+
     loop {
         nread = 0;
         while nread < buf.len() {
@@ -79,5 +83,7 @@ fn handle_client(mut stream: TcpStream) {
                 }
             }
         }
+
+        let _ = stream.flush();
     }
 }

@@ -9,12 +9,14 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <errno.h>
 
 #include <sys/wait.h>
 
 static int done = 0;
+static const int ONE = 1;
 
 void * handle_client(void * arg);
 void sig_handler(int signo) {
@@ -119,6 +121,8 @@ void * handle_client(void * arg) {
 			}
 			// TODO: handle error
 		}
+
+		setsockopt(csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
 		while (done == 0) {
 			ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
