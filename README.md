@@ -16,7 +16,7 @@ results.
 
 Running the volley benchmarks on an 80-core machine running Linux 3.16
 with 80 clients distributed across 40 cores yields the results given in
-the graph below. Error bars denote the 99% confidence interval.
+the graph below. Error bars denote the 95% confidence interval.
 
 Of particular note is the fact that beyond ~5 cores, performance
 **drops** as the servers are given access to more cores.  While it
