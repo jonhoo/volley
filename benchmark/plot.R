@@ -13,12 +13,15 @@ d <- data.frame(read.table(
 			   col.names=c("server", "clients", "cores", "time")
 			   ))
 d$ops = d$clients/(d$time/1000.0/1000.0)
+d$min = d$clients/((d$time-10)/1000.0/1000.0)
+d$max = d$clients/((d$time+10)/1000.0/1000.0)
 
 print(d)
-p <- ggplot(data=d, aes(x = cores, y = ops, color = server))
+p <- ggplot(data=d, aes(x = cores, y = ops, ymin = min, ymax = max, color = server))
 p <- p + geom_line()
-p <- p + ylim(0, 300000)
-#p <- p + facet_wrap(~ clients)
+p <- p + ylim(0, 500000)
+p <- p + geom_errorbar()
+p <- p + facet_wrap(~ clients)
 p <- p + xlab("CPU cores")
 p <- p + ylab("Mean ops/s")
 
