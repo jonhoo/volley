@@ -20,7 +20,7 @@ To reproduce, run:
 
 ```
 benchmark/ $ experiment -r $(PWD)/..
-benchmark/ $ grep us 'out/*/run-1/stdout.log' | tr '/:-' '\t' | awk '{print $6" "$7" "$8" "$11}' > plot.dat
+benchmark/ $ grep us 'out/*/run-1/stdout.log' | tr '/:-' '\t' | awk '{print $6" "$7" "$8" "$12}' > plot.dat
 ```
 
 And plot using the R script in `benchmark/plot.R`. Experiment can be
