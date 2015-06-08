@@ -13,8 +13,8 @@ d <- data.frame(read.table(
 			   col.names=c("server", "clients", "cores", "time")
 			   ))
 d$ops = d$clients/(d$time/1000.0/1000.0)
-d$min = d$clients/((d$time-10)/1000.0/1000.0)
-d$max = d$clients/((d$time+10)/1000.0/1000.0)
+d$min = d$clients/((d$time-5)/1000.0/1000.0)
+d$max = d$clients/((d$time+5)/1000.0/1000.0)
 
 print(d)
 p <- ggplot(data=d, aes(x = cores, y = ops, ymin = min, ymax = max, color = server))
