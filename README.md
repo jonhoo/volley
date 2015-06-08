@@ -16,12 +16,13 @@ results.
 
 Running the volley benchmarks on an 80-core machine running Linux 3.16
 with 80 clients distributed across 40 cores yields the results given in
-the graph below. Of particular note is the fact that beyond ~5 cores,
-performance **drops** as the servers are given access to more cores.
-While it reasonable that the bottleneck eventually should become the
-transmission rate of the underlying network interface (loopback in our
-case), this does not explain why the performance *decreases* with more
-cores.
+the graph below. Error bars denote the 99% confidence interval.
+
+Of particular note is the fact that beyond ~5 cores, performance
+**drops** as the servers are given access to more cores.  While it
+reasonable that the bottleneck eventually should become the transmission
+rate of the underlying network interface (loopback in our case), this
+does not explain why the performance *decreases* with more cores.
 
 Profiling using `perf` shows that a majority of the time (~80%) is spent
 in `_raw_spin_lock`, resulting from calls from `__libc_sendto`. Since
