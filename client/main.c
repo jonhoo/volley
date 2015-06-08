@@ -26,7 +26,7 @@ struct client_stats {
 void * client(void * arg);
 const double Z = 2.576; // 99% probability estimated value
 const double E = 5000;  // lies within +/- 5us of true value
-const int MAX_ITERATIONS_PER_ROUND = 1000000;
+const int MAX_ITERATIONS_PER_ROUND = 10000000;
 
 int main(int argc, char** argv) {
 	int port, clients = 0;
