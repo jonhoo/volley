@@ -15,7 +15,7 @@
 				"$SRC/target/servers/$version"
 			],
 			"vary": {
-				"cores": "set(1,2,4,8,12,16,20,24,28)",
+				"cores": "set(1,2,4,8,12,16,20,24,28,32,36,40)",
 				"clients": "set(80)",
 				"version": "set(cthread, rust, go)"
 			}
