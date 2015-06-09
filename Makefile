@@ -7,7 +7,7 @@ target/servers/%: servers/$*/**/*.*
 
 target/client: client/main.c
 	mkdir -p target
-	$(CC) -Wall -g -o target/client -pthread -lm -lbsd -O3 client/main.c
+	$(CC) -Wall -g -o target/client -pthread -lm -lbsd -O3 -std=gnu11 client/main.c
 
 clean:
 	rm -rf target
