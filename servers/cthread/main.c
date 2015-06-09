@@ -150,6 +150,7 @@ void * handle_client(void * arg) {
 	}
 
 	close(csock);
+	free(arg);
 
 	return NULL;
 }
