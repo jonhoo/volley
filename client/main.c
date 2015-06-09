@@ -46,6 +46,10 @@ int main(int argc, char** argv) {
 	double stddev = 0;
 	long n = 0;
 
+	double inner_m = 0;
+	double inner_std = 0;
+	long inner_n = 0;
+
 	while ((opt = getopt(argc, argv, "p:c:")) != -1) {
 		switch (opt) {
 			case 'p':
@@ -89,6 +93,11 @@ int main(int argc, char** argv) {
 				// TODO: handle error
 			}
 		}
+
+		inner_m = 0;
+		inner_std = 0;
+		inner_n = 0;
+
 		for (i = 0; i < clients; i++) {
 			ret = pthread_join(threads[i], (void**) &cret);
 			if (ret != 0) {
@@ -98,15 +107,21 @@ int main(int argc, char** argv) {
 				// TODO: handle error
 			}
 
-			current_mean = mean;
-			mean = (n * current_mean + cret->n * cret->mean) / (n + cret->n);
-			stddev = sqrt((pow(stddev, 2)*n+cret->S)/(n+cret->n));
-			n += cret->n;
+			current_mean = inner_m;
+			inner_m = (inner_n * current_mean + cret->n * cret->mean) / (inner_n + cret->n);
+			inner_std = sqrt((pow(inner_std, 2)*inner_n+cret->S)/(inner_n+cret->n));
+			inner_n += cret->n;
 			free(cret);
 		}
 
-		carg.iterations = (long) ceil((pow((Z * stddev) / E, 2) - n) / clients);
-		fprintf(stderr, "iteration complete: mean is %.0fus, stddev is %.2fus\n", mean/1000.0, stddev/1000.0);
+		// update global estimates
+		current_mean = mean;
+		mean = (n * current_mean + inner_n * inner_m) / (n + inner_n);
+		stddev = sqrt((pow(stddev, 2)*n+pow(inner_std, 2)*inner_n)/(n+inner_n));
+		n += inner_n;
+
+		carg.iterations = (long) ceil((pow((Z * inner_std) / E, 2) - inner_n) / clients);
+		fprintf(stderr, "iteration complete: outer: %.0fus/%.2fus, inner: %.0fus/%.2fus\n", mean/1000.0, stddev/1000.0, inner_m/1000.0, inner_std/1000.0);
 		if (carg.iterations > max_iterations) {
 			fprintf(stderr, "need many more samples (%ld) to achieve statistical significance, doing another %ld per client\n", carg.iterations * clients, max_iterations);
 			carg.iterations = max_iterations;
