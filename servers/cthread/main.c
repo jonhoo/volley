@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		// TODO: handle error
 	}
 
-	nthreads = 3 * get_nprocs();
+	nthreads = 200;
 	threads = calloc(nthreads, sizeof(pthread_t));
 
 	for (i = 0; i < nthreads; i++) {
