@@ -87,12 +87,15 @@ int main(int argc, char *argv[])
 
 	while (done == 0) {
 		csock = malloc(sizeof(int));
-		*csock = accept(ssock, (struct sockaddr *)&client, &socksize);
+
+		do {
+			*csock = accept(ssock, (struct sockaddr *)&client, &socksize);
+		} while (*csock == -1 && errno == EAGAIN);
+
 		if (*csock == -1) {
-			if (errno == EWOULDBLOCK) {
-				continue;
+			if (errno != EINTR) {
+				perror("could not accept connection");
 			}
-			perror("could not accept connection");
 			break;
 		}
 
