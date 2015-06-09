@@ -77,26 +77,30 @@ int main(int argc, char *argv[])
 
 	ret = bind(ssock, (struct sockaddr *)&servaddr, sizeof(servaddr));
 	if (ret == -1) {
-		// TODO: handle error
+		perror("failed to bind to socket");
+		return EXIT_FAILURE;
 	}
 
 	ret = listen(ssock, 0);
 	if (ret == -1) {
-		// TODO: handle error
+		perror("failed to listen on socket");
+		return EXIT_FAILURE;
 	}
 
 	while (done == 0) {
 		csock = malloc(sizeof(int));
 
 		do {
-			*csock = accept(ssock, (struct sockaddr *)&client, &socksize);
+			*csock = accept(ssock, NULL, NULL);
 		} while (*csock == -1 && errno == EAGAIN);
 
 		if (*csock == -1) {
-			if (errno != EINTR) {
-				perror("could not accept connection");
+			if (errno == EINTR) {
+				free(csock);
+				continue;
 			}
-			break;
+			perror("failed to accept connection");
+			return EXIT_FAILURE;
 		}
 
 		setsockopt(*csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
@@ -104,7 +108,7 @@ int main(int argc, char *argv[])
 		ret = pthread_create(&thread, NULL, handle_client, csock);
 		if (ret != 0) {
 			perror("failed to spawn client thread");
-			break;
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -121,7 +125,7 @@ void * handle_client(void * arg) {
 	while (done == 0) {
 		do {
 			ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
-		} while (ret == -1 && errno == EAGAIN);
+		} while (ret == -1 && (errno == EAGAIN || errno == EINTR));
 
 		if (ret == -1) {
 			perror("failed to receive challenge from client");
@@ -141,7 +145,7 @@ void * handle_client(void * arg) {
 
 		do {
 			ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
-		} while (ret == -1 && errno == EAGAIN);
+		} while (ret == -1 && (errno == EAGAIN || errno == EINTR));
 
 		if (ret == -1) {
 			perror("failed to send response to client");

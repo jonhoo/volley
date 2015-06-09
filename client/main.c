@@ -93,17 +93,22 @@ int main(int argc, char** argv) {
 		for (i = 0; i < clients; i++) {
 			ret = pthread_create(&threads[i], NULL, client, &carg);
 			if (ret != 0) {
-				// TODO: handle error
+				errno = ret;
+				perror("failed to spawn worker thread");
+				goto after;
 			}
 		}
 
 		for (i = 0; i < clients; i++) {
 			ret = pthread_join(threads[i], (void**) &cret);
 			if (ret != 0) {
-				// TODO: handle error
+				errno = ret;
+				perror("failed to spawn worker thread");
+				goto after;
 			}
 			if (cret == PTHREAD_CANCELED) {
-				// TODO: handle error
+				fprintf(stderr, "thread cancelled...\n");
+				return EXIT_FAILURE;
 			}
 
 			current_mean = mean;
@@ -122,6 +127,8 @@ int main(int argc, char** argv) {
 			fprintf(stderr, "running %ld more iterations per client to achieve statistical significance\n", carg.iterations);
 		}
 	}
+
+after:
 
 	// send termination signal
 	sockfd = socket(AF_INET,SOCK_STREAM, 0);
@@ -168,19 +175,52 @@ void * client(void * arg) {
 
 	sockfd = socket(AF_INET,SOCK_STREAM, 0);
 	if (sockfd == -1) {
-		// TODO:: handle socket error
-		return stats;
-	}
-
-	servaddr = (struct sockaddr *) config->servaddr;
-	ret = connect(sockfd, servaddr, sizeof(struct sockaddr_in));
-
-	if (ret == -1) {
-		perror("failed to connect to server");
+		perror("failed to open outgoing socket");
 		return stats;
 	}
 
 	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
+
+	servaddr = (struct sockaddr *) config->servaddr;
+	ret = connect(sockfd, servaddr, sizeof(struct sockaddr_in));
+
+	if (ret != 0) {
+		perror("failed to connect to server");
+		printf("failed to connect to server\n");
+		return stats;
+	}
+
+	// verify connection
+
+	challenge = htonl(1);
+
+	do {
+		ret = sendto(sockfd, &challenge, sizeof(challenge), 0, NULL, 0);
+	} while (ret == -1 && errno == EAGAIN);
+
+	if (ret == -1) {
+		perror("failed to send test challenge to server");
+		return stats;
+	}
+
+	do {
+		ret = recvfrom(sockfd, &response , sizeof(response), MSG_WAITALL, NULL, NULL);
+	} while (ret == -1 && errno == EAGAIN);
+
+	if (ret == -1) {
+		perror("failed to receive test response from server");
+		return stats;
+	}
+	if (ret == 0) {
+		perror("received no test data from server; connection closed");
+		return stats;
+	}
+
+	response = ntohl(response);
+	if (response != 2) {
+		fprintf(stderr, "server responded with incorrect test response (%u != %u+1)\n", response, challenge);
+		return stats;
+	}
 
 	atomic_fetch_sub(&wait_n, 1);
 	while (atomic_load(&wait_n) != 0) {}
