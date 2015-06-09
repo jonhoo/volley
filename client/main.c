@@ -218,7 +218,7 @@ void * client(void * arg) {
 
 	response = ntohl(response);
 	if (response != 2) {
-		fprintf(stderr, "server responded with incorrect test response (%u != %u+1)\n", response, challenge);
+		fprintf(stderr, "server responded with incorrect test response (%u != 2)\n", response);
 		return stats;
 	}
 
