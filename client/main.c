@@ -198,7 +198,7 @@ void * client(void * arg) {
 
 		if (ret == -1) {
 			perror("failed to send challenge to server");
-			return stats;
+			break;
 		}
 
 		do {
@@ -207,11 +207,11 @@ void * client(void * arg) {
 
 		if (ret == -1) {
 			perror("failed to receive response from server");
-			return stats;
+			break;
 		}
 		if (ret == 0) {
 			perror("received no data from server; connection closed");
-			return stats;
+			break;
 		}
 		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
@@ -219,7 +219,7 @@ void * client(void * arg) {
 		response = ntohl(response);
 		if (response != challenge + 1) {
 			fprintf(stderr, "server responded with incorrect response (%u != %u+1)\n", response, challenge);
-			return stats;
+			break;
 		}
 
 		secdiff = end.tv_sec - start.tv_sec;
