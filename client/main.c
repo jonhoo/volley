@@ -179,8 +179,6 @@ void * client(void * arg) {
 		return stats;
 	}
 
-	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
-
 	servaddr = (struct sockaddr *) config->servaddr;
 	ret = connect(sockfd, servaddr, sizeof(struct sockaddr_in));
 
@@ -189,6 +187,8 @@ void * client(void * arg) {
 		printf("failed to connect to server\n");
 		return stats;
 	}
+
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
 	// verify connection
 
