@@ -35,10 +35,11 @@ int main(int argc, char *argv[])
 
 	struct sockaddr_in servaddr;
 	struct timeval timeout;
-	int ssock;
+	int ssock, csock;
+	struct sockaddr_in client;
+	socklen_t socksize = sizeof(struct sockaddr_in);
 
-	long nthreads;
-	pthread_t *threads;
+	pthread_t thread;
 
 	while ((opt = getopt(argc, argv, "p:")) != -1) {
 		switch (opt) {
@@ -84,35 +85,6 @@ int main(int argc, char *argv[])
 		// TODO: handle error
 	}
 
-	nthreads = 200;
-	threads = calloc(nthreads, sizeof(pthread_t));
-
-	for (i = 0; i < nthreads; i++) {
-		ret = pthread_create(&threads[i], NULL, handle_client, &ssock);
-		if (ret != 0) {
-			// TODO: handle error
-		}
-	}
-	for (i = 0; i < nthreads; i++) {
-		ret = pthread_join(threads[i], NULL);
-		if (ret != 0) {
-			// TODO: handle error
-		}
-	}
-
-	close(ssock);
-	return EXIT_SUCCESS;
-}
-
-void * handle_client(void * arg) {
-	int ret;
-	int csock;
-	int ssock = *((int *)arg);
-	struct sockaddr_in client;
-	socklen_t socksize = sizeof(struct sockaddr_in);
-
-	uint32_t challenge;
-
 	while (done == 0) {
 		csock = accept(ssock, (struct sockaddr *)&client, &socksize);
 		if (csock == -1) {
@@ -124,33 +96,48 @@ void * handle_client(void * arg) {
 
 		setsockopt(csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
-		while (done == 0) {
-			ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
-			if (ret == -1) {
-				// TODO: handle error
-				break;
-			}
-			if (ret == 0) {
-				// connection closed
-				break;
-			}
+		ret = pthread_create(&thread, NULL, handle_client, &csock);
+		if (ret != 0) {
+			// TODO: handle error
+		}
+	}
 
-			challenge = ntohl(challenge);
-			if (challenge == 0) {
-				done = 1;
-				break;
-			}
-			challenge = htonl(challenge + 1);
+	close(ssock);
+	return EXIT_SUCCESS;
+}
 
-			ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
-			if (ret == -1) {
-				// TODO: handle error
-				break;
-			}
+void * handle_client(void * arg) {
+	int ret;
+	int csock = *((int *)arg);
+
+	uint32_t challenge;
+
+	while (done == 0) {
+		ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
+		if (ret == -1) {
+			// TODO: handle error
+			break;
+		}
+		if (ret == 0) {
+			// connection closed
+			break;
 		}
 
-		close(csock);
+		challenge = ntohl(challenge);
+		if (challenge == 0) {
+			done = 1;
+			break;
+		}
+		challenge = htonl(challenge + 1);
+
+		ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
+		if (ret == -1) {
+			// TODO: handle error
+			break;
+		}
 	}
+
+	close(csock);
 
 	return NULL;
 }
