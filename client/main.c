@@ -3,6 +3,8 @@
 #include <netinet/tcp.h>
 #include <stdio.h>
 
+#include <stdatomic.h>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,6 +31,8 @@ const double Z = 1.96; // 95% probability estimated value
 const double E = 5000; // lies within +/- 5us of true value
 const int MAX_ITERATIONS_PER_ROUND = 100000;
 static const int ONE = 1;
+
+static atomic_int wait_n = 0;
 
 int main(int argc, char** argv) {
 	int port, clients = 0;
@@ -87,6 +91,8 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "priming with %ld iterations across %d clients\n", carg.iterations, clients);
 
 	for (; carg.iterations > 10;) {
+
+		atomic_store(&wait_n, clients);
 		for (i = 0; i < clients; i++) {
 			ret = pthread_create(&threads[i], NULL, client, &carg);
 			if (ret != 0) {
@@ -188,6 +194,9 @@ void * client(void * arg) {
 	}
 
 	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
+
+	atomic_fetch_sub(&wait_n, 1);
+	while (atomic_load(&wait_n) != 0) {}
 
 	for (i = 0; i < config->iterations; i++) {
 		while (challenge == 0) {
