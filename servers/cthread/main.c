@@ -36,8 +36,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in servaddr;
 	struct timeval timeout;
 	int ssock, *csock;
-	struct sockaddr_in client;
-	socklen_t socksize = sizeof(struct sockaddr_in);
 
 	pthread_t thread;
 
