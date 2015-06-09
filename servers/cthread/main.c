@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
 	struct sockaddr_in servaddr;
 	struct timeval timeout;
-	int ssock, csock;
+	int ssock, *csock;
 	struct sockaddr_in client;
 	socklen_t socksize = sizeof(struct sockaddr_in);
 
@@ -86,17 +86,18 @@ int main(int argc, char *argv[])
 	}
 
 	while (done == 0) {
-		csock = accept(ssock, (struct sockaddr *)&client, &socksize);
-		if (csock == -1) {
+		csock = malloc(sizeof(int));
+		*csock = accept(ssock, (struct sockaddr *)&client, &socksize);
+		if (*csock == -1) {
 			if (errno == EWOULDBLOCK) {
 				continue;
 			}
 			// TODO: handle error
 		}
 
-		setsockopt(csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
+		setsockopt(*csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
-		ret = pthread_create(&thread, NULL, handle_client, &csock);
+		ret = pthread_create(&thread, NULL, handle_client, csock);
 		if (ret != 0) {
 			// TODO: handle error
 		}
