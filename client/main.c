@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdio.h>
 
 #include <unistd.h>
@@ -27,6 +28,7 @@ void * client(void * arg);
 const double Z = 1.96; // 95% probability estimated value
 const double E = 5000; // lies within +/- 5us of true value
 const int MAX_ITERATIONS_PER_ROUND = 1000000;
+static const int ONE = 1;
 
 int main(int argc, char** argv) {
 	int port, clients = 0;
@@ -169,6 +171,8 @@ void * client(void * arg) {
 		// TODO: handle connect error
 		return stats;
 	}
+
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
 	for (i = 0; i < config->iterations; i++) {
 		while (challenge == 0) {
