@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include <bsd/stdlib.h>
 #include <pthread.h>
@@ -175,7 +176,7 @@ void * client(void * arg) {
 	ret = connect(sockfd, servaddr, sizeof(struct sockaddr_in));
 
 	if (ret == -1) {
-		// TODO: handle connect error
+		perror("failed to connect to server");
 		return stats;
 	}
 
@@ -190,19 +191,26 @@ void * client(void * arg) {
 		}
 
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-		ret = sendto(sockfd, &challenge, sizeof(challenge), 0, NULL, 0);
+
+		do {
+			ret = sendto(sockfd, &challenge, sizeof(challenge), 0, NULL, 0);
+		} while (ret == -1 && errno == EAGAIN);
+
 		if (ret == -1) {
-			// TODO: handle errno
+			perror("failed to send challenge to server");
 			return stats;
 		}
 
-		ret = recvfrom(sockfd, &response , sizeof(response), MSG_WAITALL, NULL, NULL);
+		do {
+			ret = recvfrom(sockfd, &response , sizeof(response), MSG_WAITALL, NULL, NULL);
+		} while (ret == -1 && errno == EAGAIN);
+
 		if (ret == -1) {
-			// TODO: handle errno
+			perror("failed to receive response from server");
 			return stats;
 		}
 		if (ret == 0) {
-			// TODO: handle connection closed
+			perror("received no data from server; connection closed");
 			return stats;
 		}
 		clock_gettime(CLOCK_MONOTONIC_RAW, &end);

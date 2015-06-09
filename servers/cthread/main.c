@@ -92,14 +92,16 @@ int main(int argc, char *argv[])
 			if (errno == EWOULDBLOCK) {
 				continue;
 			}
-			// TODO: handle error
+			perror("could not accept connection");
+			break;
 		}
 
 		setsockopt(*csock, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
 
 		ret = pthread_create(&thread, NULL, handle_client, csock);
 		if (ret != 0) {
-			// TODO: handle error
+			perror("failed to spawn client thread");
+			break;
 		}
 	}
 
@@ -114,9 +116,12 @@ void * handle_client(void * arg) {
 	uint32_t challenge;
 
 	while (done == 0) {
-		ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
+		do {
+			ret = recvfrom(csock, &challenge , sizeof(challenge), MSG_WAITALL, NULL, NULL);
+		} while (ret == -1 && errno == EAGAIN);
+
 		if (ret == -1) {
-			// TODO: handle error
+			perror("failed to receive challenge from client");
 			break;
 		}
 		if (ret == 0) {
@@ -131,9 +136,12 @@ void * handle_client(void * arg) {
 		}
 		challenge = htonl(challenge + 1);
 
-		ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
+		do {
+			ret = sendto(csock, &challenge, sizeof(challenge), 0, NULL, 0);
+		} while (ret == -1 && errno == EAGAIN);
+
 		if (ret == -1) {
-			// TODO: handle error
+			perror("failed to send response to client");
 			break;
 		}
 	}
