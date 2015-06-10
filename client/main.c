@@ -208,6 +208,10 @@ void * client(void * arg) {
 	} while (ret == -1 && errno == EAGAIN);
 
 	if (ret == -1) {
+		if (errno == ECONNRESET) {
+			free(stats);
+			return client(arg);
+		}
 		perror("failed to receive test response from server");
 		return stats;
 	}
