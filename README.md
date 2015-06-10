@@ -43,7 +43,7 @@ locks, which will restore near-linear performance scaling as the number
 of cores increases. If you have a really fast server though, maybe think
 twice about adding those extra cores?
 
-![performance plot](https://cdn.rawgit.com/jonhoo/volley/05c1a477b85d46f72016c35b2271cb3bad3fb982/benchmark/perf.png)
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/249f1d55a5a12f925d560bda069f9ce8b56c1dd1/benchmark/perf.png)
 
 To reproduce, run:
 
