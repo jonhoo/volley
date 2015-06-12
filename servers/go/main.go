@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"os/signal"
@@ -46,22 +45,25 @@ func handleConnection(c net.Conn) {
 
 	c.(*net.TCPConn).SetNoDelay(true)
 
-	var challenge uint32 = 0
+	var (
+		challenge uint32
+		err       error
+		buf       = make([]byte, 4)
+	)
+
 	for {
-		if err := binary.Read(c, binary.BigEndian, &challenge); err != nil {
-			if err != io.EOF {
-				fmt.Println("bad read", err)
-			}
+		if _, err = c.Read(buf); err != nil {
+			fmt.Println("read error: ", err)
 			return
 		}
 
-		if challenge == 0 {
+		if challenge = binary.BigEndian.Uint32(buf); challenge == 0 {
 			os.Exit(0)
 		}
-		challenge++
+		binary.BigEndian.PutUint32(buf, challenge+1)
 
-		if err := binary.Write(c, binary.BigEndian, &challenge); err != nil {
-			fmt.Println("bad write", err)
+		if _, err = c.Write(buf); err != nil {
+			fmt.Println("write error: ", err)
 			return
 		}
 	}
