@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 	int opt, i, ret;
 	long max_iterations;
 	int sockfd;
+	int failed = 0;
 
 	struct sockaddr_in servaddr;
 	struct client_details carg;
@@ -101,15 +102,21 @@ int main(int argc, char** argv) {
 
 		for (i = 0; i < clients; i++) {
 			ret = pthread_join(threads[i], (void**) &cret);
+
 			if (ret != 0) {
 				errno = ret;
-				perror("failed to spawn worker thread");
-				goto after;
+				perror("failed to join worker thread");
+				failed = 1;
 			}
 			if (cret == PTHREAD_CANCELED) {
 				fprintf(stderr, "thread cancelled...\n");
-				return EXIT_FAILURE;
+				failed = 1;
 			}
+			if (cret == NULL && failed == 0) {
+				fprintf(stderr, "thread aborted...\n");
+				failed = 1;
+			}
+			if (failed == 1) continue;
 
 			current_mean = mean;
 			mean = (n * current_mean + cret->n * cret->mean) / (n + cret->n);
@@ -147,9 +154,12 @@ after:
 	}
 	close(sockfd);
 
+	if (failed == 1) {
+		return EXIT_FAILURE;
+	}
 
 	printf("%.2fus\n", mean/1000.0);
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 void * client(void * arg) {
@@ -167,7 +177,7 @@ void * client(void * arg) {
 
 	uint32_t response, challenge = 0;
 
-	long i;
+	long i = 0;
 	int ret;
 
 	stats = malloc(sizeof(struct client_stats));
@@ -176,7 +186,9 @@ void * client(void * arg) {
 	sockfd = socket(AF_INET,SOCK_STREAM, 0);
 	if (sockfd == -1) {
 		perror("failed to open outgoing socket");
-		return stats;
+		atomic_store(&wait_n, -1);
+		free(stats);
+		return NULL;
 	}
 
 	servaddr = (struct sockaddr *) config->servaddr;
@@ -184,8 +196,9 @@ void * client(void * arg) {
 
 	if (ret != 0) {
 		perror("failed to connect to server");
-		printf("failed to connect to server\n");
-		return stats;
+		atomic_store(&wait_n, -1);
+		free(stats);
+		return NULL;
 	}
 
 	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &ONE, sizeof(ONE));
@@ -200,7 +213,8 @@ void * client(void * arg) {
 
 	if (ret == -1) {
 		perror("failed to send test challenge to server");
-		return stats;
+		atomic_store(&wait_n, -1);
+		goto thread_after;
 	}
 
 	do {
@@ -209,25 +223,30 @@ void * client(void * arg) {
 
 	if (ret == -1) {
 		if (errno == ECONNRESET) {
+			fprintf(stderr, "reconnecting...");
 			free(stats);
 			return client(arg);
 		}
 		perror("failed to receive test response from server");
-		return stats;
+		goto thread_after;
 	}
 	if (ret == 0) {
 		perror("received no test data from server; connection closed");
-		return stats;
+		goto thread_after;
 	}
 
 	response = ntohl(response);
 	if (response != 2) {
 		fprintf(stderr, "server responded with incorrect test response (%u != 2)\n", response);
-		return stats;
+		goto thread_after;
 	}
 
 	atomic_fetch_sub(&wait_n, 1);
-	while (atomic_load(&wait_n) != 0) {}
+	while (atomic_load(&wait_n) > 0) usleep(1);
+
+	if (atomic_load(&wait_n) < 0) {
+		goto thread_after;
+	}
 
 	for (i = 0; i < config->iterations; i++) {
 		while (challenge == 0) {
@@ -277,6 +296,13 @@ void * client(void * arg) {
 		stats->S = stats->S + (diff - stats->mean) * (diff - current_mean);
 	}
 
+thread_after:
 	close(sockfd);
+
+	if (i < config->iterations-1) {
+		atomic_store(&wait_n, -1);
+		free(stats);
+		return NULL;
+	}
 	return stats;
 }
