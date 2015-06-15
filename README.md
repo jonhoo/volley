@@ -17,9 +17,9 @@ results.
 Running the volley benchmarks on an 80-core machine running Linux 3.16
 with 40, 80 and 200 clients distributed across 40 cores yields the
 results given in the graph below. Error bars denote the 95% confidence
-interval.
+interval. The benchmark machine has four NUMA nodes, each with 10 cores.
 
-![performance plot](https://cdn.rawgit.com/jonhoo/volley/5603381f6376cea0b024fefa1e240e4091d3c7f0/benchmark/perf.png)
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/1f3b064b7e8a805dbc2901d03d93a0fab583aac1/benchmark/perf.png)
 
 To reproduce, run:
 
