@@ -15,10 +15,11 @@ results.
 ## Preliminary results
 
 Running the volley benchmarks on an 80-core machine running Linux 3.16
-with 40 and 80 clients distributed across 40 cores yields the results
-given in the graph below. Error bars denote the 95% confidence interval.
+with 40, 80 and 200 clients distributed across 40 cores yields the
+results given in the graph below. Error bars denote the 95% confidence
+interval.
 
-![performance plot](https://cdn.rawgit.com/jonhoo/volley/249f1d55a5a12f925d560bda069f9ce8b56c1dd1/benchmark/perf.png)
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/5603381f6376cea0b024fefa1e240e4091d3c7f0/benchmark/perf.png)
 
 To reproduce, run:
 
