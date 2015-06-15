@@ -223,7 +223,7 @@ void * client(void * arg) {
 
 	if (ret == -1) {
 		if (errno == ECONNRESET) {
-			fprintf(stderr, "reconnecting...");
+			fprintf(stderr, "reconnecting...\n");
 			free(stats);
 			return client(arg);
 		}
@@ -248,6 +248,7 @@ void * client(void * arg) {
 		goto thread_after;
 	}
 
+	fprintf(stderr, "thread connection ready.\n");
 	for (i = 0; i < config->iterations; i++) {
 		while (challenge == 0) {
 			challenge = htonl(arc4random());
