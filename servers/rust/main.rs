@@ -80,7 +80,5 @@ fn handle_client(mut stream: TcpStream) {
                 }
             }
         }
-
-        let _ = stream.flush();
     }
 }
