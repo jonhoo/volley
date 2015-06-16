@@ -1,4 +1,3 @@
-#![feature(libc)]
 #![feature(tcp)]
 
 use std::net::{TcpListener, TcpStream};
@@ -9,8 +8,6 @@ use std::mem;
 use std::str::FromStr;
 use std::io::Read;
 use std::io::Write;
-
-extern crate libc;
 
 fn main() {
     let port_ : Option<String> = env::args().skip(2).next();
@@ -68,7 +65,7 @@ fn handle_client(mut stream: TcpStream) {
 
         challenge = u32::from_be(challenge);
         if challenge == 0 {
-            unsafe { libc::exit(0 as libc::c_int); }
+            std::process::exit(0);
         }
         challenge = u32::to_be(challenge + 1);
 
