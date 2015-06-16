@@ -43,8 +43,8 @@ fn main() {
 }
 
 fn handle_client(mut stream: TcpStream) {
-    let mut challenge : u32 = 0;
-    let buf : &mut [u8; 4] = unsafe{ mem::transmute(&mut challenge) };
+    let mut buf = [0u8; 4];
+    let mut challenge;
     let mut nread;
 
     let _ = stream.set_nodelay(true);
@@ -63,11 +63,13 @@ fn handle_client(mut stream: TcpStream) {
             }
         }
 
+        challenge = unsafe { mem::transmute(buf) };
         challenge = u32::from_be(challenge);
         if challenge == 0 {
             std::process::exit(0);
         }
         challenge = u32::to_be(challenge + 1);
+        buf = unsafe { mem::transmute(challenge) };
 
         let mut nwritten = 0;
         while nwritten < buf.len() {
