@@ -25,7 +25,7 @@ To reproduce, run:
 
 ```
 benchmark/ $ experiment -r $(PWD)/..
-benchmark/ $ grep us 'out/*/run-1/stdout.log' | tr '/:-' '\t' | awk '{print $2" "$3" "$4" "$8}' > plot.dat
+benchmark/ $ grep us 'out/*/run-1/stdout.log' | sed 's@/run-[^/]*/stdout.log@@' | tr '/:-' '\t' | awk '{printf $2; for (i=3;i<NF-2;i++){printf "-"$i} print " "$(NF-2)" "$(NF-1)" "$NF}' > plot.dat
 ```
 
 And plot using the R script in `benchmark/plot.R`. Experiment can be
