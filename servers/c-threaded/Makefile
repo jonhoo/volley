@@ -1,5 +1,5 @@
-cthread: main.c
-	$(CC) -Wall -o cthread -O3 -pthread main.c
+c-threaded: main.c
+	$(CC) -Wall -o $@ -O3 -pthread main.c
 
 clean:
-	rm -f cthread
+	rm -f c-threaded
