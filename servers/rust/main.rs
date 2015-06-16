@@ -44,7 +44,7 @@ fn main() {
 
 fn handle_client(mut stream: TcpStream) {
     let mut buf = [0u8; 4];
-    let mut challenge = 0u32;
+    let mut challenge;
     let mut nread;
 
     let _ = stream.set_nodelay(true);
