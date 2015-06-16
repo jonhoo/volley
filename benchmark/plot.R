@@ -17,6 +17,7 @@ d$min = d$clients/((d$time-5)/1000.0/1000.0)
 d$max = d$clients/((d$time+5)/1000.0/1000.0)
 
 #d = d[d[, "clients"] == 80,]
+#d = d[grep("^go", d[, "server"]),]
 print(d)
 p <- ggplot(data=d, aes(x = cores, y = ops, ymin = min, ymax = max, color = server))
 p <- p + geom_line()
