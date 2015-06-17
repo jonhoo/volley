@@ -52,6 +52,9 @@ int main(int argc, char** argv) {
 	double stddev = 0;
 	long n = 0;
 
+	struct timespec start, now;
+	time_t secdiff;
+
 	while ((opt = getopt(argc, argv, "p:c:")) != -1) {
 		switch (opt) {
 			case 'p':
@@ -88,6 +91,7 @@ int main(int argc, char** argv) {
 	carg.iterations = max_iterations;
 	fprintf(stderr, "priming with %ld iterations across %d clients\n", carg.iterations, clients);
 
+	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	for (; carg.iterations > 10;) {
 
 		atomic_store(&wait_n, clients);
@@ -132,6 +136,15 @@ int main(int argc, char** argv) {
 			carg.iterations = max_iterations;
 		} else if (carg.iterations > 0) {
 			fprintf(stderr, "running %ld more iterations per client to achieve statistical significance\n", carg.iterations);
+		}
+
+		clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+		secdiff = now.tv_sec - start.tv_sec;
+
+		if (secdiff > 5*60 && carg.iterations > 10) {
+			fprintf(stderr, "we've been spinning for too long -- giving up\n");
+			failed = 1;
+			break;
 		}
 	}
 
