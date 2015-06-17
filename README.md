@@ -19,7 +19,7 @@ with 40, 80 and 200 clients distributed across 40 cores yields the
 results given in the graph below. Error bars denote the 99% confidence
 interval. The benchmark machine has four NUMA nodes, each with 10 cores.
 
-![performance plot](https://cdn.rawgit.com/jonhoo/volley/60f41129201553a9e3e8af57b22e0a2a0e935e86/benchmark/perf.png)
+![performance plot](https://cdn.rawgit.com/jonhoo/volley/8a6f4055eac115d7b1833019a20e153f14623fb3/benchmark/perf.png)
 
 To reproduce, run:
 
