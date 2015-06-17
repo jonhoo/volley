@@ -21,11 +21,11 @@ d$max = d$clients/((d$time+5)/1000.0/1000.0)
 print(d)
 p <- ggplot(data=d, aes(x = cores, y = ops, ymin = min, ymax = max, color = server))
 p <- p + geom_line()
-p <- p + ylim(0, 1600000)
+p <- p + ylim(0, 2000000)
 p <- p + geom_errorbar()
 p <- p + facet_wrap(~ clients)
 p <- p + xlab("CPU cores")
 p <- p + ylab("Mean ops/s")
 
 p
-ggsave("perf.png", plot = p, width = 8, height = 6)
+ggsave("plot.png", plot = p, width = 8, height = 6)
