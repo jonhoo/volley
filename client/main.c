@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
 
 		if (secdiff > 5*60 && carg.iterations > 10) {
 			fprintf(stderr, "we've been spinning for too long -- giving up\n");
-			failed = 1;
 			break;
 		}
 	}
@@ -171,7 +170,7 @@ after:
 		return EXIT_FAILURE;
 	}
 
-	printf("%.2fus\n", mean/1000.0);
+	printf("%.0fus %.2fus %ld\n", mean/1000.0, stddev/1000.0, n);
 	return EXIT_SUCCESS;
 }
 
