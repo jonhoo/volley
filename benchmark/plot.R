@@ -9,12 +9,14 @@ args <- if (length(args) == 0) Sys.getenv("ARGS") else args
 args <- if (args[1] == "") "plot.dat" else args
 
 d <- data.frame(read.table(
-			   text=gsub('us$', '', readLines(file(args[1]))),
+			   text=gsub('us ', ' ', readLines(file(args[1]))),
 			   col.names=c("server", "clients", "cores", "time", "stddev", "n")
 			   ))
+
+d$ci = 2.58 * d$stddev / sqrt(d$n)
 d$ops = d$clients/(d$time/1000.0/1000.0)
-d$min = d$clients/((d$time-d$stddev)/1000.0/1000.0)
-d$max = d$clients/((d$time+d$stddev)/1000.0/1000.0)
+d$min = d$clients/((d$time-d$ci)/1000.0/1000.0)
+d$max = d$clients/((d$time+d$ci)/1000.0/1000.0)
 
 #d = d[d[, "clients"] == 80,]
 #d = d[grep("^go", d[, "server"]),]

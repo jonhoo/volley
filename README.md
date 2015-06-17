@@ -16,7 +16,7 @@ results.
 
 Running the volley benchmarks on an 80-core machine running Linux 3.16
 with 40, 80 and 200 clients distributed across 40 cores yields the
-results given in the graph below. Error bars denote the 95% confidence
+results given in the graph below. Error bars denote the 99% confidence
 interval. The benchmark machine has four NUMA nodes, each with 10 cores.
 
 ![performance plot](https://cdn.rawgit.com/jonhoo/volley/60f41129201553a9e3e8af57b22e0a2a0e935e86/benchmark/perf.png)
@@ -25,7 +25,7 @@ To reproduce, run:
 
 ```
 benchmark/ $ experiment -r $(PWD)/..
-benchmark/ $ grep us 'out/*/run-1/stdout.log' | sed 's@/run-[^/]*/stdout.log@@' | tr '/:-' '\t' | awk '{printf $2; for (i=3;i<NF-4;i++){printf "-"$i} print $(NF-4)" "$(NF-3)" "$(NF-2)" "$(NF-1)" "$NF}' > plot.dat
+benchmark/ $ grep us 'out/*/run-1/stdout.log' | sed 's@/run-[^/]*/stdout.log@@' | tr '/:-' '\t' | awk '{printf $2; for (i=3;i<NF-4;i++){printf "-"$i} for (i=NF-4;i<=NF;i++){printf " "$i} print ""}'
 ```
 
 And plot using the R script in `benchmark/plot.R`. Experiment can be
