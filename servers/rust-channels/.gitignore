@@ -1,1 +1,3 @@
 rust-channels
+Cargo.lock
+target/*
