@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/signal"
@@ -53,7 +54,9 @@ func handleConnection(c net.Conn) {
 
 	for {
 		if _, err = c.Read(buf); err != nil {
-			fmt.Println("read error: ", err)
+			if err != io.EOF {
+				fmt.Println("read error: ", err)
+			}
 			return
 		}
 
