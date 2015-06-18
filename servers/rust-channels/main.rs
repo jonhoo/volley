@@ -12,6 +12,8 @@ use std::io::Read;
 use std::io::Write;
 
 fn main() {
+
+    //Get the port.
     let port_str_ : Option<String> = env::args().skip(2).next();
     if let None = port_str_ {
         println!("usage: {} -p port -c cores", env::args().next().unwrap());
@@ -26,6 +28,7 @@ fn main() {
 
     let port = port_.unwrap();
 
+    //Get the number of cores.
     let ncores_str_ :Option<String> = env::args().skip(4).next();
 
     if let None = ncores_str_ {
@@ -49,6 +52,7 @@ fn main() {
         return;
     }
 
+    //Get the number of clients.
     let nclients_ = u16::from_str(&nclients_str_.unwrap());
     if let Err(ref e) = nclients_ {
         println!("invalid cores number given: {}", e);
@@ -59,6 +63,7 @@ fn main() {
     println!("Number of clients: {}", nclients);
 
 
+    //Initialize ncores threads that will process the network traffic.
     let (coord_tx_, coord_rx): (Sender<u16>, Receiver<u16>) = mpsc::channel();
 
     let mut work_tx_vec: Vec<Sender<TcpStream>> = Vec::with_capacity(ncores as usize);
@@ -93,7 +98,6 @@ fn main() {
     println!("{} threads created.", ncores);
 
 
-
     let listener_ = TcpListener::bind(("127.0.0.1", port));
     if let Err(ref e) = listener_ {
         println!("failed to listen on port: {}", e);
@@ -103,8 +107,11 @@ fn main() {
     let listener = listener_.unwrap();
     println!("Started listening on port: {}",port);
 
+    //Loop in case we need more statistical data.
     loop {
 
+        //Perform the initialization phase.
+        //Get the streams for each connection.
         let mut streams: Vec<TcpStream> = Vec::new();
         for _ in 0..nclients  {
             let stream_ = listener.accept();
@@ -123,6 +130,9 @@ fn main() {
             }
 
         }
+
+        //Perform the network processing by the ncores threads.
+        //Each thread notifies the main thread when it can process more clients.
 
         for stream in streams {
             let ready = coord_rx.recv();
