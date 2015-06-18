@@ -31,6 +31,7 @@ void * client(void * arg);
 const double Z = 1.96; // 95% probability estimated value
 const double E = 5000; // lies within +/- 5us of true value
 const int MAX_ITERATIONS_PER_ROUND = 1000000;
+const int MAX_SPIN_SECONDS = 3*60;
 static const int ONE = 1;
 
 static atomic_int wait_n = 0;
@@ -141,7 +142,7 @@ int main(int argc, char** argv) {
 		clock_gettime(CLOCK_MONOTONIC_RAW, &now);
 		secdiff = now.tv_sec - start.tv_sec;
 
-		if (secdiff > 5*60 && carg.iterations > 10) {
+		if (secdiff > MAX_SPIN_SECONDS && carg.iterations > 10) {
 			fprintf(stderr, "we've been spinning for too long -- giving up\n");
 			break;
 		}
