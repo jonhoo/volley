@@ -1,4 +1,3 @@
-# server clients cores mean stddev num_samples
 c-threaded 200 10 259us 591.81us 1000000
 c-threaded 200 12 239us 421.20us 1000000
 c-threaded 200 18 184us 278.46us 1000000
