@@ -12,6 +12,23 @@ operations with the server to gather statistics. It will continue doing
 so for as many iterations as it takes to produce statistically relevant
 results.
 
+## Goals
+
+Volley can be used to benchmark many things, but I believe there are two
+main categories of servers that are of interest. In particular, I
+envision that there will be at least two implementations for every
+language represented in Volley: one that is idiomatic, and one that is
+optimized. Comparing the idiomatic solutions' performance is interesting
+in and of itself, and comparing the optimized solutions might yield
+insights into how well-suited a particular language is for doing
+high-performance networking.
+
+I say *at least* two, because there might be other interesting designs
+to explore. For example, does the conventional wisdom that having a
+worker pool improves performance actually still hold? What is the
+performance difference between a forking and a threaded server? What is
+the performance difference between asynchronous and synchronous I/O?
+
 ## Preliminary results
 
 Running the volley benchmarks on an 80-core machine running Linux 3.16
