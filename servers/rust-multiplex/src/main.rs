@@ -71,19 +71,19 @@ fn main() {
 
     // accept on all cores
     let mut wait = Vec::new();
-    for _ in 0..ncores  {
+    for i in 0..ncores  {
         let listener_clone = listener.try_clone().unwrap();
         let txs = stream_txs.clone();
 
         wait.push(thread::spawn(move || {
-            let mut i = 0;
+            let mut ti = i as usize;
             loop {
                 let stream_ = listener_clone.accept();
 
                 match stream_ {
                     Ok((mut stream,_)) => {
                         prepare_connection(&mut stream);
-                        if let Err(ref e) = txs[i as usize].send(stream) {
+                        if let Err(ref e) = txs[ti as usize].send(stream) {
                             println!("failed to delegate stream: {}", e);
                         }
 
@@ -93,7 +93,7 @@ fn main() {
                     }
                 }
                 
-                i = (i+1) % txs.len();
+                ti = (ti+1) % txs.len();
             }
         }));
     }
