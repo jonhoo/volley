@@ -1,7 +1,0 @@
-[package]
-name = "rust-channels"
-version = "0.1.0"
-authors = ["Apostolis Xekoukoulotakis <apostolis.xekoukoulotakis@gmail.com>"]
-
-[dependencies]
-num_cpus = "*"
