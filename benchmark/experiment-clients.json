@@ -1,0 +1,25 @@
+{
+	"checkout": "master",
+	"experiment": "Vary clients",
+	"keep-stdout": true,
+	"iterations": 1,
+	"parallelism": 1,
+	"versions": {
+		"$version-$clients-$cores": {
+			"build": "make target/client target/servers/$version",
+			"diffs": ["/fill/this/in/wide_error.patch"],
+			"arguments": [
+				"$SRC/benchmark/bench.sh",
+				"$cores",
+				"40",
+				"$clients",
+				"$SRC/target/servers/$version"
+			],
+			"vary": {
+				"cores": "set(1, 10, 20, 40)",
+				"clients": "set(48, 80, 160, 320, 640, 1280, 2560, 5120)",
+				"version": "set(rust, go, go-blocking)"
+			}
+		},
+	}
+}
