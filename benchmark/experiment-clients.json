@@ -18,7 +18,7 @@
 			"vary": {
 				"cores": "set(1, 10, 20, 40)",
 				"clients": "set(48, 80, 160, 320, 640, 1280, 2560, 5120)",
-				"version": "set(rust, go, go-blocking)"
+				"version": "set(rust, rust-multiplex, go, go-blocking)"
 			}
 		},
 	}
