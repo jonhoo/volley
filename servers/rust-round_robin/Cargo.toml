@@ -1,0 +1,7 @@
+[package]
+name = "rust-round_robin"
+version = "0.1.0"
+authors = ["Apostolis Xekoukoulotakis <apostolis.xekoukoulotakis@gmail.com>"]
+
+[dependencies]
+num_cpus = "*"
