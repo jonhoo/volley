@@ -7,6 +7,7 @@ use std::sync::mpsc;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::io;
+use std::process::Command;
 use std::env;
 use std::mem;
 use std::str::FromStr;
@@ -33,8 +34,18 @@ fn main() {
     }
     let listener = listener_.unwrap();
 
-    let ncores = num_cpus::get() as u16;
-    let mut stream_txs: Vec<Sender<TcpStream>> = Vec::with_capacity(ncores as usize);
+    // ideally, we'd use the num_cpus crate, but we can't until
+    // https://github.com/seanmonstar/num_cpus/issues/12
+    // is fixed.
+    // let ncores = num_cpus::get() as u16;
+    let ncores = String::from_utf8(Command::new("nproc").output().unwrap_or_else(|e| {
+        panic!("failed to get number of cores: {}", e)
+    }).stdout).unwrap_or_else(|e| {
+        panic!("failed to get number of cores: {}", e)
+    }).trim().parse::<usize>().unwrap_or_else(|e| {
+        panic!("failed to get number of cores: {}", e)
+    });
+    let mut stream_txs: Vec<Sender<TcpStream>> = Vec::with_capacity(ncores);
 
     // spawn n theads, each multiplexing between many clients
     for _ in 0..ncores {
