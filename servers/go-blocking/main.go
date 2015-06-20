@@ -15,6 +15,7 @@ import (
 
 func main() {
 	var port = flag.Int("p", 0, "port to listen on")
+	var connCount = flag.Int("c", 0, "number of connections")
 	flag.Parse()
 
 	c := make(chan os.Signal, 1)
@@ -25,7 +26,7 @@ func main() {
 		}
 	}()
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(*connCount)
 	ln, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		log.Printf("failed to listen on port %d: %v", port, err)
@@ -43,6 +44,7 @@ func main() {
 }
 
 func handleConnection(c net.Conn) {
+	runtime.LockOSThread()
 	f, err := c.(*net.TCPConn).File()
 	c.Close()
 	if err != nil {
