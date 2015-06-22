@@ -47,7 +47,7 @@ func main() {
 			continue
 		}
 		nc := atomic.AddInt32(&numConns, 1)
-		if int(nc) > numThreads {
+		if int(nc) >= numThreads {
 			numThreads *= 2
 			runtime.GOMAXPROCS(numThreads)
 		}
