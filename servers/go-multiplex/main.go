@@ -97,9 +97,8 @@ func iterate(fd int, buf []byte) bool {
 	return true
 }
 
-func serve(fd int, ch []chan int) {
+func serve(fd int, ch chan int) {
 	buf := make([]byte, 4)
-	l := len(ch)
 	for i := 0; ; i++ {
 		nfd, _, err := unix.Accept(fd)
 		if err != nil {
@@ -111,11 +110,46 @@ func serve(fd int, ch []chan int) {
 			log.Println(err)
 		}
 		if iterate(nfd, buf) {
-			ch[i%l] <- nfd
+			ch <- nfd
 		} else {
 			unix.Close(nfd)
 		}
 	}
+}
+
+func spread(txcs []chan int) chan int {
+	rxc := make(chan int, 128)
+	buf := make([]int, 0, 128)
+	fd := 0
+	i := 0
+	var txc chan int = nil
+	lt := len(txcs)
+
+	go func() {
+		for {
+			select {
+			case nfd := <-rxc:
+				if fd == 0 {
+					fd = nfd
+					txc = txcs[i%lt]
+					i++
+				} else {
+					buf = append(buf, nfd)
+				}
+			case txc <- fd:
+				if len(buf) > 0 {
+					txc = txcs[i%lt]
+					i++
+					fd = buf[0]
+					buf = buf[1:]
+				} else {
+					fd = 0
+					txc = nil
+				}
+			}
+		}
+	}()
+	return rxc
 }
 
 func main() {
@@ -131,7 +165,7 @@ func main() {
 	}()
 
 	NP := runtime.NumCPU()
-	runtime.GOMAXPROCS(NP + 1)
+	runtime.GOMAXPROCS(NP + 2) // handler, serve and spread
 
 	sfd := listen(*port)
 
@@ -140,5 +174,6 @@ func main() {
 		chs[i] = make(chan int, 4)
 		go handler(chs[i])
 	}
-	serve(sfd, chs)
+
+	serve(sfd, spread(chs))
 }
