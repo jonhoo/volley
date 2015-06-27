@@ -10,7 +10,13 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync/atomic"
 	"syscall"
+)
+
+var (
+	numConns   int32 = 0
+	numThreads int
 )
 
 func main() {
@@ -25,7 +31,9 @@ func main() {
 		}
 	}()
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	numThreads = runtime.NumCPU()
+	runtime.GOMAXPROCS(numThreads)
+
 	ln, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		log.Printf("failed to listen on port %d: %v", port, err)
@@ -38,17 +46,29 @@ func main() {
 			log.Println("failed to accept connection:", err)
 			continue
 		}
+		nc := atomic.AddInt32(&numConns, 1)
+		if int(nc) >= numThreads {
+			numThreads *= 2
+			runtime.GOMAXPROCS(numThreads)
+		}
 		go handleConnection(conn)
 	}
 }
 
 func handleConnection(c net.Conn) {
+	runtime.LockOSThread()
+
 	f, err := c.(*net.TCPConn).File()
 	c.Close()
 	if err != nil {
 		log.Println(err)
+		return
 	}
-	defer f.Close()
+
+	defer func() {
+		f.Close()
+		atomic.AddInt32(&numConns, -1)
+	}()
 
 	var (
 		challenge uint32
